@@ -73,17 +73,19 @@ def register():
 
 def banking_operations(user):
 
-    print(f'Welcome {user[0],user[1]}')
+    print(f'Welcome {user[0]} {user[1]}')
 
     print('What would you like to do?')
-    options=int(input("Press '1' for deposit\nPress '2' for withdrawal\nPress '3' to logout\nPress '4' to exit\nEnter your answer: "))
+    options=int(input("Press '1' for deposit\nPress '2' for withdrawal\nPress '3' for Customer care \nPress '4' to logout\nPress '5' to exit\nEnter your answer: "))
     if options==1:
         deposit()
     elif options==2:
         withdrawal()
     elif options==3:
-        logout()
+        customer_care()
     elif options==4:
+        logout()
+    elif option==5:
         exit()
     else:
         print("Invalid option selected")
