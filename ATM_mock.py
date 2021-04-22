@@ -23,8 +23,13 @@ def init():
     print("***WELCOME TO BANK RUBY***")
     print("The current date and time is: ", current)
 
-    have_account = int(input(
-        "Do you have an account with us? \nPress '1' for Yes\nPress '2' for No\nPress '3' to exit\nEnter your answer: "))
+    try:
+        have_account = int(input(
+            "Do you have an account with us? \nPress '1' for Yes\n"
+            "Press '2' for No\nPress '3' to exit\nEnter your answer: "))
+    except ValueError:
+        print("Invalid option selected")
+        init()
 
     if have_account == 1:
         login()
@@ -42,20 +47,43 @@ def login():
 
     user_account = int(input('Enter your account number: '))
 
-    if user_account in database.keys():
-        print('Account number recognized')
+    a_valid_account_number = account_number_validation(user_account)
+
+    if a_valid_account_number:
+        print('Account number recognized as valid')
         user_password = input('Enter your secret password: ')
+
         for details in database.values():
-            pass
-        if user_password == database[user_account][3]:
-            print("Login successful")
-            banking_operations(details)
-        else:
-            print("Invalid password")
-            login()
+
+            if user_password == database[user_account][3]:
+                print("Login successful")
+                banking_operations(details)
+            else:
+                print("Invalid password")
+                login()
     else:
         print("Invalid Account Number")
         login()
+
+
+def account_number_validation(account_number):
+    if account_number:
+        if len(str(account_number)) == 10:
+
+            try:
+                int(account_number)
+                return True
+            except ValueError:
+                print("Account number must be integers")
+                return False
+
+
+        else:
+            print("Account number must be 10 digits not more or less")
+            return False
+    else:
+        print("THe account number field cannot be empty")
+        return False
 
 
 def register():
@@ -66,9 +94,14 @@ def register():
     e_mail = input("Enter your Email address:")
     password = input("Create your password: ")
 
-    account_number = (generate_account_number())
-    card_number = cards()
-    database[account_number] = [first_name, last_name, e_mail, password, card_number]
+    try:
+        account_number = (generate_account_number())
+        card_number = cards()
+    except EnvironmentError:
+        print("Account number generation Failed")
+        register()
+
+    database[account_number] = [first_name, last_name, e_mail, password, card_number, 0]
     print(account_number)
     print("Your account has been successfully created")
 
@@ -79,9 +112,14 @@ def banking_operations(user):
     print(f'Welcome {user[0]} {user[1]}')
 
     print('What would you like to do?')
-    options = int(input(
-        "Press '1' for deposit\nPress '2' for withdrawal\nPress '3' for Customer care \nPress '4' to logout\nPress "
-        "'5' to exit\nEnter your answer: "))
+    try:
+        options = int(input(
+            "Press '1' for deposit\nPress '2' for withdrawal\nPress '3' for Customer care \nPress '4' to logout\nPress "
+            "'5' to exit\nEnter your answer: "))
+    except ValueError:
+        print("Selected Option must an integer")
+        banking_operations(user)
+        
     if options == 1:
         deposit()
     elif options == 2:
@@ -99,17 +137,39 @@ def banking_operations(user):
 
 def withdrawal():
     print("***Withdrawal***")
-    amount = int(input("How much would you like to withdraw?\n"))
-    print(f"Take your cash {amount}")
+    try:
+        amount = int(input("How much would you like to withdraw?\n"))
+        print(f"Take your cash {amount}")
+    except ValueError:
+        print("invalid amount")
+        withdrawal()
+
     for details in database.values():
+        current_balance=details[5]
+        if current_balance < amount:
+            current_balance=amount-current_balance
+            print(f"insufficient balance, deposit{current_balance} to withdraw{amount}")
+            deposit()
+        elif current_balance>amount:
+            current_balance=current_balance-amount
+            print(f"You have withdrawn {amount},\nYour current balance is{current_balance}")
+
         banking_operations(details)
 
 
 def deposit():
     print("***Deposit***")
-    amount = int(input("How much would you like to deposit?\n"))
-    print(f"Your deposit of {amount} has been confirmed.")
+    try:
+        amount = int(input("How much would you like to deposit?\n"))
+        print(f"Your deposit of {amount} has been confirmed.")
+    except ValueError:
+        print("Invalid Amount inputed")
+        deposit()
+
     for details in database.values():
+        current_balance= get_balance(details)+amount
+        print(f"Your current balance is{current_balance}")
+
         banking_operations(details)
 
 
@@ -117,7 +177,9 @@ def customer_care():
     print('This is the Customer Care Unit')
     complaint = input("What issue would you like to report?\n")
     print("Thank you for contacting us")
+
     for details in database.values():
+
         banking_operations(details)
 
 
@@ -129,6 +191,8 @@ def generate_account_number():
     print("This is your account number")
     return random.randrange(0000000000, 9999999999)
 
+def get_balance(user_details):
+    return user_details[5]
 
 def virtual_card():
     card = int(
